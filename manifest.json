@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Youtube Video Summary ChatGPT",
+  "version": "1.0",
+  "description": "Get a summary of any Youtube video containing a transcript from ChatGPT",
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "host_permissions": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "48": "icon.png"
+    }
+  }
+}
