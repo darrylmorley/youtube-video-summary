@@ -1,9 +1,27 @@
 chrome.action.onClicked.addListener(async (tab) => {
   console.log("Extension icon clicked!");
+
   if (tab.url.includes("youtube.com/watch")) {
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      function: extractAndSendTranscript,
+    // Reload the page to ensure the latest video data is loaded
+    chrome.tabs.reload(tab.id, {}, () => {
+      console.log("Page reloaded.");
+
+      // Wait for the reload to complete before injecting the script
+      chrome.tabs.onUpdated.addListener(function onTabUpdated(
+        tabId,
+        changeInfo
+      ) {
+        if (tabId === tab.id && changeInfo.status === "complete") {
+          console.log("Page reload complete, injecting script...");
+          chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: extractAndSendTranscript,
+          });
+
+          // Remove listener after script injection
+          chrome.tabs.onUpdated.removeListener(onTabUpdated);
+        }
+      });
     });
   } else {
     console.error("This extension only works on YouTube video pages.");
@@ -14,7 +32,14 @@ chrome.action.onClicked.addListener(async (tab) => {
 function extractAndSendTranscript() {
   // Function to extract transcript and video info
   async function getTranscriptAndSendToChatGPT() {
-    const config = await retryGetConfig();
+    let config = null;
+    let transcript = null;
+    let videoData = null;
+    let captions = null;
+    let title = null;
+    let author = null;
+
+    config = await getConfigRetry();
     if (!config) {
       alert("Could not fetch the transcript configuration.");
       return;
@@ -22,23 +47,23 @@ function extractAndSendTranscript() {
 
     console.log("Config: ", config);
 
-    const captions = config?.captions;
-    const title = config?.videoDetails?.title;
-    const author = config?.videoDetails?.author;
+    captions = config?.captions;
+    title = config?.videoDetails?.title;
+    author = config?.videoDetails?.author;
 
     if (!captions || captions.length === 0) {
       alert("No transcript available for this video.");
       return;
     }
 
-    const transcript = await fetchTranscript(captions);
+    transcript = await fetchTranscript(captions);
     if (!transcript) {
       alert("Could not fetch the transcript.");
       return;
     }
 
     // Video data extracted
-    const videoData = {
+    videoData = {
       title: title,
       author: author,
       transcript: transcript,
@@ -54,7 +79,7 @@ function extractAndSendTranscript() {
   }
 
   // Retry mechanism to fetch the config with a timeout
-  async function retryGetConfig(maxRetries = 5, delay = 1000) {
+  async function getConfigRetry(maxRetries = 5, delay = 1000) {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const config = await getConfig();
       if (config) {
@@ -70,7 +95,8 @@ function extractAndSendTranscript() {
 
   // Helper functions
   async function getConfig() {
-    const scripts = document.querySelectorAll("script");
+    let scripts = null;
+    scripts = document.querySelectorAll("script");
 
     for (let script of scripts) {
       if (script.textContent.includes("ytInitialPlayerResponse")) {
