@@ -165,7 +165,7 @@ async function injectTranscriptIntoChat(videoData) {
     if (!transcript) return;
     let bulletQty = transcript.length > 2000 ? 10 : 5;
     let prompt =
-      `Summarise the transcript of the video "${videoData.title}" by ${videoData.author} in ${bulletQty} bullet points. The entire transcript is as follows:\n\n` +
+      `Summarise the transcript of the video "${videoData.title}" by ${videoData.author} in ${bulletQty} bullet points. Start your response with the title and author of the video. The entire transcript is as follows:\n\n` +
       transcript;
 
     await waitInput();
