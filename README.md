@@ -1,6 +1,6 @@
 # YouTube Video Transcript to ChatGPT Extension
 
-This Chrome extension allows users to extract transcripts from YouTube videos and send them directly to ChatGPT for summarization. By clicking the extension icon while viewing a YouTube video, the extension fetches the transcript (if available) and sends it to a ChatGPT tab, where a summary is generated.
+This Chrome extension allows users to extract transcripts from YouTube videos and send them directly to ChatGPT for summarisation. By clicking the extension icon while viewing a YouTube video, the extension fetches the transcript (if available) and sends it to a ChatGPT tab, where a summary is generated.
 
 ## Features
 
